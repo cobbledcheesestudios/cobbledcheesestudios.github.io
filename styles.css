@@ -7,7 +7,7 @@ h1 {
   color: white;
 }
 .cheesegradient {
-  background: linear-gradient(yellow, gold);
+  background: linear-gradient(LightYellow, Yellow);
     -webkit-background-clip: text;
             background-clip: text;
     -webkit-text-fill-color: transparent;
