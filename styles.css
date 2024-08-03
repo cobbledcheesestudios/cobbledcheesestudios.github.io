@@ -6,3 +6,9 @@ h1 {
   font-weight: normal;
   color: white;
 }
+cheesegradient {
+  background: linear-gradient(yellow, gold);
+    -webkit-background-clip: text;
+            background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
