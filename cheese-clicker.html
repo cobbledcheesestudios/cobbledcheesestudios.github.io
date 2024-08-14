@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheese Clicker</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        #cheese {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        #cheeseButton {
+            font-size: 5rem;
+            padding: 20px;
+            background-color: #ffeb3b;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        #cheeseButton:active {
+            transform: scale(0.9);
+        }
+        #resetButton {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        #resetButton:hover {
+            background-color: #cc0000;
+        }
+        #shopButton {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            z-index: 2;
+        }
+        #shopButton:hover {
+            background-color: #333;
+        }
+        #shopSidebar {
+            position: absolute;
+            top: 20px;
+            right: -220px;
+            width: 200px; /* Adjusted width */
+            height: calc(100% - 80px); /* Adjusted height */
+            background-color: black;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            transition: right 0.3s ease;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+        #shopSidebar.show {
+            right: 10px;
+        }
+        #shopSidebar h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .shop-item {
+            margin-bottom: 20px;
+        }
+        .shop-item button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .shop-item button:hover {
+            background-color: #0056b3;
+        }
+        #notification {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 3;
+            width: 300px;
+            text-align: center;
+            font-size: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s ease;
+        }
+        #notification.show {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        #notification button {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        #resetModal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 4;
+            width: 350px; /* Adjusted width for more space */
+            text-align: center;
+            font-size: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        #resetModal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        #resetModal button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        #resetModal button:hover {
+            background-color: #cc0000;
+        }
+        #resetModal input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            width: calc(100% - 22px); /* Adjust width to fit well */
+        }
+        .resetModal-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .resetModal-buttons button {
+            flex: 1;
+            margin: 0 5px;
+        }
+        .resetModal-buttons button.cancel {
+            background-color: #444;
+        }
+        .resetModal-buttons button.cancel:hover {
+            background-color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cheese">Cheese: 0</div>
+    <button id="cheeseButton">🧀</button>
+    <button id="resetButton">Reset Progress</button>
+    <button id="shopButton">Shop</button>
+
+    <!-- Sidebar for the shop -->
+    <div id="shopSidebar">
+        <h2>Shop</h2>
+        <div class="shop-item">
+            <p>+1 Cheese Per Click</p>
+            <p id="itemClickCost">Cost: 10 Cheese</p>
+            <p id="itemClickCount">You have: 0</p>
+            <button id="buyClickItem">Buy</button>
+        </div>
+        <div class="shop-item">
+            <p>+1 Cheese Per Second</p>
+            <p id="itemPerSecondCost">Cost: 35 Cheese</p>
+            <p id="itemPerSecondCount">You have: 0</p>
+            <button id="buyPerSecondItem">Buy</button>
+        </div>
+    </div>
+
+    <!-- Notification element -->
+    <div id="notification">
+        <button id="notificationClose">&times;</button>
+        <span id="notificationText"></span>
+    </div>
+
+    <!-- Reset Modal -->
+    <div id="resetModal">
+        <p>Type 'reset' to confirm resetting progress:</p>
+        <input type="text" id="resetInput" placeholder="Type 'reset' here">
+        <div class="resetModal-buttons">
+            <button id="confirmResetButton">Confirm Reset</button>
+            <button id="cancelResetButton" class="cancel">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize values from localStorage
+        let cheese = parseInt(localStorage.getItem("cheeseScore")) || 0;
+        let clickItemCost = parseInt(localStorage.getItem("clickItemCost")) || 10;
+        let perSecondItemCost = parseInt(localStorage.getItem("perSecondItemCost")) || 35;
+        let cheesePerClick = parseInt(localStorage.getItem("cheesePerClick")) || 1;
+        let itemsOwned = parseInt(localStorage.getItem("itemsOwned")) || 0;
+        let itemsPerSecond = parseInt(localStorage.getItem("itemsPerSecond")) || 0;
+
+        // Start the interval for generating cheese per second
+        function startCheeseGeneration() {
+            setInterval(() => {
+                cheese += itemsPerSecond;
+                document.getElementById('cheese').innerText = "Cheese: " + cheese;
+                localStorage.setItem("cheeseScore", cheese);
+            }, 1000); // Every second
+        }
+        startCheeseGeneration(); // Start generating cheese
+
+        function updateUI() {
+            document.getElementById('cheese').innerText = "Cheese: " + cheese;
+            document.getElementById('itemClickCost').innerText = "Cost: " + clickItemCost + " Cheese";
+            document.getElementById('itemClickCount').innerText = "You have: " + itemsOwned;
+            document.getElementById('itemPerSecondCost').innerText = "Cost: " + perSecondItemCost + " Cheese";
+            document.getElementById('itemPerSecondCount').innerText = "You have: " + itemsPerSecond;
+            localStorage.setItem("cheeseScore", cheese);
+            localStorage.setItem("clickItemCost", clickItemCost);
+            localStorage.setItem("perSecondItemCost", perSecondItemCost);
+            localStorage.setItem("cheesePerClick", cheesePerClick);
+            localStorage.setItem("itemsOwned", itemsOwned);
+            localStorage.setItem("itemsPerSecond", itemsPerSecond);
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            document.getElementById('notificationText').innerText = message;
+            notification.classList.add('show');
+            notification.timeoutId = setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        function hideResetModal() {
+            document.getElementById('resetModal').classList.remove('show');
+        }
+
+        function showResetModal() {
+            document.getElementById('resetModal').classList.add('show');
+        }
+
+        document.getElementById('cheeseButton').addEventListener('click', function() {
+            cheese += cheesePerClick;
+            document.getElementById('cheese').innerText = "Cheese: " + cheese;
+            localStorage.setItem("cheeseScore", cheese);
+        });
+
+        document.getElementById('resetButton').addEventListener('click', function() {
+            showResetModal();
+        });
+
+        document.getElementById('confirmResetButton').addEventListener('click', function() {
+            const input = document.getElementById('resetInput').value;
+            if (input === 'reset') {
+                cheese = 0;
+                clickItemCost = 10;
+                perSecondItemCost = 35;
+                cheesePerClick = 1;
+                itemsOwned = 0;
+                itemsPerSecond = 0;
+                document.getElementById('cheese').innerText = "Cheese: " + cheese;
+                localStorage.removeItem("cheeseScore");
+                localStorage.removeItem("clickItemCost");
+                localStorage.removeItem("perSecondItemCost");
+                localStorage.removeItem("cheesePerClick");
+                localStorage.removeItem("itemsOwned");
+                localStorage.removeItem("itemsPerSecond");
+                showNotification("Progress has been reset.");
+                updateUI();
+            } else {
+                showNotification("Reset canceled.");
+            }
+            document.getElementById('resetInput').value = '';
+            hideResetModal();
+        });
+
+        document.getElementById('cancelResetButton').addEventListener('click', function() {
+            document.getElementById('resetInput').value = '';
+            hideResetModal();
+        });
+
+        document.getElementById('shopButton').addEventListener('click', function() {
+            const shopSidebar = document.getElementById('shopSidebar');
+            shopSidebar.classList.toggle('show');
+            hideResetModal(); // Hide the reset modal if it's open
+        });
+
+        document.getElementById('buyClickItem').addEventListener('click', function() {
+            if (cheese >= clickItemCost) {
+                cheese -= clickItemCost;
+                itemsOwned += 1;
+                clickItemCost *= 2;
+                cheesePerClick = 1 + itemsOwned;
+                localStorage.setItem("cheeseScore", cheese);
+                localStorage.setItem("clickItemCost", clickItemCost);
+                localStorage.setItem("cheesePerClick", cheesePerClick);
+                localStorage.setItem("itemsOwned", itemsOwned);
+                updateUI();
+                showNotification("Item purchased!");
+            } else {
+                showNotification("Not enough cheese to buy this item.");
+            }
+            hideResetModal(); // Hide the reset modal if it's open
+        });
+
+        document.getElementById('buyPerSecondItem').addEventListener('click', function() {
+            if (cheese >= perSecondItemCost) {
+                cheese -= perSecondItemCost;
+                itemsPerSecond += 1;
+                perSecondItemCost *= 2;
+                localStorage.setItem("cheeseScore", cheese);
+                localStorage.setItem("perSecondItemCost", perSecondItemCost);
+                localStorage.setItem("itemsPerSecond", itemsPerSecond);
+                updateUI();
+                showNotification("Item purchased!");
+            } else {
+                showNotification("Not enough cheese to buy this item.");
+            }
+            hideResetModal(); // Hide the reset modal if it's open
+        });
+
+        document.getElementById('notificationClose').addEventListener('click', function() {
+            document.getElementById('notification').classList.remove('show');
+            clearTimeout(document.getElementById('notification').timeoutId);
+        });
+
+        document.addEventListener('click', function(event) {
+            const resetModal = document.getElementById('resetModal');
+            if (event.target === resetModal) {
+                hideResetModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                hideResetModal();
+            }
+        });
+
+        updateUI();
+        console.log("Stored Cheese: ", localStorage.getItem("cheeseScore"));
+        console.log("Stored Click Item Cost: ", localStorage.getItem("clickItemCost"));
+        console.log("Stored Per Second Item Cost: ", localStorage.getItem("perSecondItemCost"));
+        console.log("Stored Cheese Per Click: ", localStorage.getItem("cheesePerClick"));
+        console.log("Stored Items Owned: ", localStorage.getItem("itemsOwned"));
+        console.log("Stored Items Per Second: ", localStorage.getItem("itemsPerSecond"));
+    </script>
+</body>
+</html>
