@@ -4,3 +4,6 @@ function discord() {
 function roblox() {
   window.open("https://www.roblox.com/groups/33318243/cobbled-cheese-studios#!/about")
 }
+function playgame() {
+  window.open("https://cobbledcheesestudios.github.io")
+}
